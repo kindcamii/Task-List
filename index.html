@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Task List</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Tailwind custom config -->
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: {
+                DEFAULT: "#2563eb",
+                light: "#eff6ff",
+                dark: "#1d4ed8",
+              },
+              accent: {
+                DEFAULT: "#f97316",
+                light: "#fff7ed",
+                dark: "#ea6c0a",
+              },
+            },
+            boxShadow: {
+              card: "0 2px 16px 0 rgba(37,99,235,0.08)",
+            },
+          },
+        },
+      };
+    </script>
+
+    <!-- Custom CSS — dimuat setelah Tailwind config agar tidak tertimpa -->
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body class="min-h-screen bg-gradient-to-br from-primary-light via-white to-accent-light font-sans text-gray-800">
+
+    <!-- ===== HEADER ===== -->
+    <header class="bg-white shadow-card sticky top-0 z-10">
+      <div class="max-w-2xl mx-auto px-4 py-4 flex items-center gap-3">
+        <!-- App icon -->
+        <span class="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-primary text-white text-lg font-bold shadow">✓</span>
+        <h1 class="text-xl font-bold tracking-tight text-primary">Task List</h1>
+        <!-- Task counter badge -->
+        <span id="task-counter"
+          class="ml-auto bg-accent-light text-accent text-xs font-semibold px-3 py-1 rounded-full border border-accent/20">
+          0 task aktif
+        </span>
+      </div>
+    </header>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="max-w-2xl mx-auto px-4 py-8 flex flex-col gap-6">
+
+      <!-- Input Card -->
+      <section aria-label="Tambah task baru">
+        <div class="bg-white rounded-2xl shadow-card p-5 flex flex-col sm:flex-row gap-3">
+          <input
+            id="task-input"
+            type="text"
+            placeholder="Tambahkan task baru…"
+            maxlength="120"
+            class="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition placeholder-gray-400"
+          />
+          <button
+            id="add-btn"
+            class="bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all duration-200 shadow hover:shadow-md active:scale-95 whitespace-nowrap"
+          >
+            + Tambah Task
+          </button>
+        </div>
+      </section>
+
+      <!-- Filter Bar -->
+      <section aria-label="Filter task">
+        <div class="bg-white rounded-2xl shadow-card p-1.5 flex gap-1">
+          <button data-filter="all"       class="filter-btn active-filter flex-1 text-sm font-medium py-2 rounded-xl transition-all duration-200">Semua</button>
+          <button data-filter="active"    class="filter-btn flex-1 text-sm font-medium py-2 rounded-xl transition-all duration-200">Aktif</button>
+          <button data-filter="completed" class="filter-btn flex-1 text-sm font-medium py-2 rounded-xl transition-all duration-200">Selesai</button>
+        </div>
+      </section>
+
+      <!-- Task List -->
+      <section aria-label="Daftar task">
+        <ul id="task-list" class="flex flex-col gap-3"></ul>
+
+        <!-- Empty state: disembunyikan via JS (style.display), BUKAN class Tailwind -->
+        <div id="empty-state" style="display:none; flex-direction:column"
+          class="items-center justify-center py-16 text-center gap-3">
+          <span class="text-5xl select-none">📋</span>
+          <p class="text-gray-500 text-sm font-medium">Belum ada task di sini.</p>
+          <p class="text-gray-400 text-xs">Tambahkan task pertama Anda di atas.</p>
+        </div>
+      </section>
+
+      <!-- Bulk action: Clear completed -->
+      <section aria-label="Aksi massal">
+        <div class="flex justify-end">
+          <!-- Disembunyikan via JS (style.display), BUKAN class Tailwind -->
+          <button
+            id="clear-completed-btn"
+            style="display:none"
+            class="text-xs text-gray-400 hover:text-red-500 underline underline-offset-2 transition-colors duration-200"
+          >
+            Hapus semua yang selesai
+          </button>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ===== EDIT MODAL ===== -->
+    <!-- Disembunyikan via JS (style.display), BUKAN class Tailwind -->
+    <div id="edit-modal"
+      style="display:none"
+      class="fixed inset-0 z-50 items-center justify-center"
+      role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <!-- Overlay -->
+      <div id="modal-overlay" class="absolute inset-0 bg-black/30 backdrop-blur-sm"></div>
+      <!-- Modal Card -->
+      <div class="relative bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md mx-4 flex flex-col gap-4 z-10">
+        <h2 id="modal-title" class="text-base font-bold text-primary">Edit Task</h2>
+        <input
+          id="edit-input"
+          type="text"
+          maxlength="120"
+          class="border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition"
+        />
+        <div class="flex gap-3 justify-end">
+          <button id="modal-cancel-btn" class="text-sm px-4 py-2 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition">Batal</button>
+          <button id="modal-save-btn"   class="text-sm px-5 py-2 rounded-xl bg-primary text-white font-semibold hover:bg-primary-dark transition shadow active:scale-95">Simpan</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Script -->
+    <script src="script.js"></script>
+  </body>
+</html>
